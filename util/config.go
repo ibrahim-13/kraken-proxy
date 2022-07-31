@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	KrakenApiKey     string
 	KrakenPrivateKey string
 	Host             string
 	Port             string

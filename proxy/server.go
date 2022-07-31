@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func StartProxyServer(host string, port string, privateKey string) {
-	http.HandleFunc("/", createProxyHandler(privateKey))
+func StartProxyServer(host string, port string, apiKey string, privateKey string) {
+	http.HandleFunc("/", createProxyHandler(apiKey, privateKey))
 	fmt.Println(http.ListenAndServe(host+":"+port, nil))
 }

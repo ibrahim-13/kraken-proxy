@@ -6,12 +6,16 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"net/url"
+	"strconv"
+	"time"
 )
 
-func GetSignature(url_path string, values url.Values, privateKey string) string {
+func GetSignature(url_path string, payload *url.Values, privateKey string) string {
 
 	sha := sha256.New()
-	sha.Write([]byte(values.Get("nonce") + values.Encode()))
+	nonce := strconv.FormatInt(time.Now().UTC().UnixMilli(), 10)
+	payload.Add("nonce", nonce)
+	sha.Write([]byte(nonce + payload.Encode()))
 	shasum := sha.Sum(nil)
 
 	b64DecodedPrivateKey, _ := base64.StdEncoding.DecodeString(privateKey)
