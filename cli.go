@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
-	log.Println("Starting server at localhost:9000")
-	proxy.StartProxyServer("localhost", "9000", util.GetConfig().KrakenPrivateKey)
+	config := util.GetConfig()
+	log.Println("Starting server at " + config.Host + ":" + config.Port)
+	proxy.StartProxyServer(config.Host, config.Port, config.KrakenPrivateKey)
 }
