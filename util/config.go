@@ -7,10 +7,11 @@ import (
 )
 
 type Config struct {
-	KrakenApiKey     string
-	KrakenPrivateKey string
-	Host             string
-	Port             string
+	KrakenApiKey        string
+	KrakenPrivateKey    string
+	Host                string
+	Port                string
+	DisableOtherRequest bool
 }
 
 var configData Config
@@ -19,7 +20,7 @@ func init() {
 	dir, _ := os.Getwd()
 	configFile := filepath.Join(dir, "config.json")
 	if !IsFileExist(configFile) {
-		bytes, _ := json.Marshal(&configData)
+		bytes, _ := json.MarshalIndent(&configData, "", "\t")
 		os.WriteFile(configFile, bytes, 0755)
 		panic("config.json file not found, sample output emitted")
 	}

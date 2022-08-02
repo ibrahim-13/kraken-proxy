@@ -2,16 +2,12 @@ package proxy
 
 import (
 	"fmt"
+	"kraken-proxy/util"
 	"net/http"
 )
 
-type ProxyServer struct {
-	http.Handler
-	KrakenApiKey     string
-	KrakenPrivateKey string
-}
-
-func StartProxyServer(host string, port string, apiKey string, privateKey string) {
-	server := NewProxyServer(apiKey, privateKey)
-	fmt.Println(http.ListenAndServe(host+":"+port, server))
+func StartProxyServer(conf *util.Config) {
+	server := NewProxyServer(conf.KrakenApiKey, conf.KrakenPrivateKey)
+	server.DisableOtherRequests = conf.DisableOtherRequest
+	fmt.Println(http.ListenAndServe(conf.Host+":"+conf.Port, server))
 }

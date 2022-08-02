@@ -6,33 +6,18 @@ import (
 	"net/http"
 )
 
-const (
-	__prefixBlocked          string = "BLOCKED          "
-	__prefixAccepted         string = "ACCEPTED         "
-	__prefixIgnored          string = "IGNORED          "
-	__prefixInvalidHost      string = "INVALID_HOST     "
-	__prefixInvalidMethod    string = "INVALID_METHOD   "
-	__prefixHttpRequestError string = "HTTP_REQUEST_ERR "
-)
-
 func logRequest(r *http.Request, param ...any) {
 	log.Println(r.Method, r.URL.Path, fmt.Sprint(param...))
 }
 
-func logAcceptedRequest(r *http.Request) {
-	log.SetPrefix(__prefixAccepted)
+func logKrakenRequest(r *http.Request) {
+	log.SetPrefix(__prefixKraken)
 	logRequest(r)
 	log.SetPrefix("")
 }
 
 func logBlockedRequest(r *http.Request) {
 	log.SetPrefix(__prefixBlocked)
-	logRequest(r)
-	log.SetPrefix("")
-}
-
-func logIgnoredRequest(r *http.Request) {
-	log.SetPrefix(__prefixIgnored)
 	logRequest(r)
 	log.SetPrefix("")
 }
@@ -52,5 +37,11 @@ func logHttpRequestError(r *http.Request, err error) {
 func logInvalidMethodError(r *http.Request) {
 	log.SetPrefix(__prefixHttpRequestError)
 	logRequest(r, "Invalid Method: "+r.Method+", Allowed method: POST")
+	log.SetPrefix("")
+}
+
+func logOtherRequest(r *http.Request) {
+	log.SetPrefix(__prefixOtherRequest)
+	logRequest(r)
 	log.SetPrefix("")
 }

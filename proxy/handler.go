@@ -7,28 +7,40 @@ import (
 	"strings"
 )
 
-const (
-	__krakenApiHost    string = "api.kraken.com"
-	__krakenPathPrefix string = "/0/private/"
-)
-
 func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !isValidRequest(w, r) {
-		return
+	if isKrakenRequest(w, r) {
+		logKrakenRequest(r)
+		r.ParseForm()
+		krakenRequest := getSignedRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
+		client := &http.Client{}
+		response, err := client.Do(krakenRequest)
+		if err != nil {
+			logHttpRequestError(r, err)
+			return
+		}
+		defer response.Body.Close()
+		copyHeader(w.Header(), response.Header)
+		w.WriteHeader(response.StatusCode)
+		io.Copy(w, response.Body)
+	} else if !p.DisableOtherRequests {
+		logOtherRequest(r)
+		client := &http.Client{}
+		delHopHeaders(r.Header)
+		r.RequestURI = ""
+		response, err := client.Do(r)
+		if err != nil {
+			logHttpRequestError(r, err)
+			return
+		}
+		defer response.Body.Close()
+		copyHeader(w.Header(), response.Header)
+		w.WriteHeader(response.StatusCode)
+		io.Copy(w, response.Body)
+	} else {
+		logBlockedRequest(r)
+		w.WriteHeader(http.StatusForbidden)
+		w.Write(_msgRequestBlocked)
 	}
-	logAcceptedRequest(r)
-	r.ParseForm()
-	krakenRequest := getSignedRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
-	client := &http.Client{}
-	response, err := client.Do(krakenRequest)
-	if err != nil {
-		logHttpRequestError(r, err)
-		return
-	}
-	defer response.Body.Close()
-	copyHeader(w.Header(), response.Header)
-	w.WriteHeader(response.StatusCode)
-	io.Copy(w, response.Body)
 }
 
 func NewProxyServer(apiKey string, privateKey string) *ProxyServer {
@@ -42,12 +54,4 @@ func getSignedRequest(r *http.Request, apiKey string, privateKey string) *http.R
 	krakenRequest.Header["API-Key"] = []string{apiKey}
 	krakenRequest.Header["API-Sign"] = []string{sign}
 	return krakenRequest
-}
-
-func copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
-		}
-	}
 }
