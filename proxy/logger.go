@@ -15,7 +15,7 @@ const (
 )
 
 func logRequest(r *http.Request, param ...any) {
-	log.Println(r.Method, r.RequestURI, fmt.Sprint(param...))
+	log.Println(r.Method, r.URL.Path, fmt.Sprint(param...))
 }
 
 func logAcceptedRequest(r *http.Request) {

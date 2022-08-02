@@ -32,13 +32,13 @@ func createProxyHandler(apiKey string, privateKey string) func(w http.ResponseWr
 			w.Write(_msgAcceptableHost)
 			return
 		}
-		_, isBlocked := uriBlocked[r.RequestURI]
+		_, isBlocked := uriBlocked[r.URL.Path]
 		if isBlocked {
 			logBlockedRequest(r)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		_, isAccepted := uriAccepted[r.RequestURI]
+		_, isAccepted := uriAccepted[r.URL.Path]
 		if isAccepted {
 			logAcceptedRequest(r)
 			signRequest(r, apiKey, privateKey)
@@ -64,9 +64,9 @@ func signRequest(r *http.Request, apiKey string, privateKey string) {
 	body, _ := io.ReadAll(r.Body)
 	r.Body.Close()
 	values, _ := url.ParseQuery(string(body))
-	sign := kraken.GetSignature(r.RequestURI, &values, privateKey)
-	r.Header.Add("API-Key", apiKey)
-	r.Header.Set("API-Sign", sign)
+	sign := kraken.GetSignature(r.URL.Path, &values, privateKey)
+	r.Header["API-Key"] = []string{apiKey}
+	r.Header["API-Sign"] = []string{sign}
 	buff := bytes.NewBuffer([]byte(values.Encode()))
 	r.Body = ioutil.NopCloser(buff)
 }
