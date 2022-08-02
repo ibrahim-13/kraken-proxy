@@ -8,59 +8,27 @@ import (
 )
 
 const (
-	__krakenApiHost string = "api.kraken.com"
+	__krakenApiHost    string = "api.kraken.com"
+	__krakenPathPrefix string = "/0/private/"
 )
 
-var _msgAcceptableHost []byte = []byte("Acceptable host: " + __krakenApiHost)
-
-var uriBlocked map[string]bool = map[string]bool{
-	"/favicon.ico": true,
-}
-
-var uriAccepted map[string]bool = map[string]bool{
-	"/0/private/Balance":     true,
-	"/0/private/AddOrder":    true,
-	"/0/private/QueryOrders": true,
-}
-
 func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Host != __krakenApiHost {
-		logInvalidHostRequest(r)
-		w.WriteHeader(http.StatusMisdirectedRequest)
-		w.Write([]byte("Invalid host: " + r.Host + "\n"))
-		w.Write(_msgAcceptableHost)
+	if !isValidRequest(w, r) {
 		return
 	}
-	if r.Method != "POST" {
-		logInvalidMethodError(r)
+	logAcceptedRequest(r)
+	r.ParseForm()
+	krakenRequest := getSignedRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
+	client := &http.Client{}
+	response, err := client.Do(krakenRequest)
+	if err != nil {
+		logHttpRequestError(r, err)
 		return
 	}
-	_, isBlocked := uriBlocked[r.URL.Path]
-	if isBlocked {
-		logBlockedRequest(r)
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	_, isAccepted := uriAccepted[r.URL.Path]
-	if isAccepted {
-		logAcceptedRequest(r)
-		r.ParseForm()
-		krakenRequest := getSignedRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
-		client := &http.Client{}
-		response, err := client.Do(krakenRequest)
-		if err != nil {
-			logHttpRequestError(r, err)
-			return
-		}
-		defer response.Body.Close()
-		copyHeader(w.Header(), response.Header)
-		w.WriteHeader(response.StatusCode)
-		io.Copy(w, response.Body)
-		return
-	}
-	logIgnoredRequest(r)
-	w.WriteHeader(http.StatusForbidden)
-
+	defer response.Body.Close()
+	copyHeader(w.Header(), response.Header)
+	w.WriteHeader(response.StatusCode)
+	io.Copy(w, response.Body)
 }
 
 func NewProxyServer(apiKey string, privateKey string) *ProxyServer {
