@@ -1,11 +1,10 @@
 package proxy
 
 import (
-	"bytes"
 	"io"
-	"io/ioutil"
 	"kraken-proxy/kraken"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -19,8 +18,9 @@ var uriBlocked map[string]bool = map[string]bool{
 }
 
 var uriAccepted map[string]bool = map[string]bool{
-	"/0/private/Balance":  true,
-	"/0/private/AddOrder": true,
+	"/0/private/Balance":     true,
+	"/0/private/AddOrder":    true,
+	"/0/private/QueryOrders": true,
 }
 
 func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +29,10 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMisdirectedRequest)
 		w.Write([]byte("Invalid host: " + r.Host + "\n"))
 		w.Write(_msgAcceptableHost)
+		return
+	}
+	if r.Method != "POST" {
+		logInvalidMethodError(r)
 		return
 	}
 	_, isBlocked := uriBlocked[r.URL.Path]
@@ -41,10 +45,9 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if isAccepted {
 		logAcceptedRequest(r)
 		r.ParseForm()
-		signRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
-		r.RequestURI = ""
+		krakenRequest := getSignedRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
 		client := &http.Client{}
-		response, err := client.Do(r)
+		response, err := client.Do(krakenRequest)
 		if err != nil {
 			logHttpRequestError(r, err)
 			return
@@ -64,12 +67,13 @@ func NewProxyServer(apiKey string, privateKey string) *ProxyServer {
 	return &ProxyServer{KrakenApiKey: apiKey, KrakenPrivateKey: privateKey}
 }
 
-func signRequest(r *http.Request, apiKey string, privateKey string) {
-	sign := kraken.GetSignature(r.URL.Path, &r.Form, privateKey)
-	r.Header["API-Key"] = []string{apiKey}
-	r.Header["API-Sign"] = []string{sign}
-	buff := bytes.NewBuffer([]byte(r.Form.Encode()))
-	r.Body = ioutil.NopCloser(buff)
+func getSignedRequest(r *http.Request, apiKey string, privateKey string) *http.Request {
+	sign := kraken.GetSignature(r.URL.Path, &r.PostForm, privateKey)
+	krakenRequest, _ := http.NewRequest("POST", "https://"+__krakenApiHost+r.URL.Path, strings.NewReader(r.PostForm.Encode()))
+	krakenRequest.Header["Content-Type"] = []string{"application/x-www-form-urlencoded; charset=utf-8"}
+	krakenRequest.Header["API-Key"] = []string{apiKey}
+	krakenRequest.Header["API-Sign"] = []string{sign}
+	return krakenRequest
 }
 
 func copyHeader(dst, src http.Header) {

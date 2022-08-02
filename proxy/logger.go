@@ -7,11 +7,12 @@ import (
 )
 
 const (
-	__prefixBlocked          string = "BLOCKED         "
-	__prefixAccepted         string = "ACCEPTED        "
-	__prefixIgnored          string = "IGNORED         "
-	__prefixInvalidHost      string = "INVALID_HOST    "
-	__prefixHttpRequestError string = "HTTP_REQUEST_ERR"
+	__prefixBlocked          string = "BLOCKED          "
+	__prefixAccepted         string = "ACCEPTED         "
+	__prefixIgnored          string = "IGNORED          "
+	__prefixInvalidHost      string = "INVALID_HOST     "
+	__prefixInvalidMethod    string = "INVALID_METHOD   "
+	__prefixHttpRequestError string = "HTTP_REQUEST_ERR "
 )
 
 func logRequest(r *http.Request, param ...any) {
@@ -45,5 +46,11 @@ func logInvalidHostRequest(r *http.Request) {
 func logHttpRequestError(r *http.Request, err error) {
 	log.SetPrefix(__prefixHttpRequestError)
 	logRequest(r, err)
+	log.SetPrefix("")
+}
+
+func logInvalidMethodError(r *http.Request) {
+	log.SetPrefix(__prefixHttpRequestError)
+	logRequest(r, "Invalid Method: "+r.Method+", Allowed method: POST")
 	log.SetPrefix("")
 }
