@@ -10,11 +10,18 @@ import (
 	"time"
 )
 
+const (
+	__formKeyNonce string = "nonce"
+)
+
 func GetSignature(url_path string, payload *url.Values, privateKey string) string {
 
 	sha := sha256.New()
 	nonce := strconv.FormatInt(time.Now().UTC().UnixMilli(), 10)
-	payload.Add("nonce", nonce)
+	if payload.Has(__formKeyNonce) {
+		payload.Del(__formKeyNonce)
+	}
+	payload.Add(__formKeyNonce, nonce)
 	sha.Write([]byte(nonce + payload.Encode()))
 	shasum := sha.Sum(nil)
 
