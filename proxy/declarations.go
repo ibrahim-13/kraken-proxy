@@ -38,7 +38,7 @@ var _uriBlocked map[string]bool = map[string]bool{
 
 type ProxyServer struct {
 	http.Handler
-	DisableOtherRequests bool
-	KrakenApiKey         string
-	KrakenPrivateKey     string
+	EnableOtherRequests bool
+	KrakenApiKey        string
+	KrakenPrivateKey    string
 }

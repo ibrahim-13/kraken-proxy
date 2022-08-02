@@ -8,6 +8,6 @@ import (
 
 func StartProxyServer(conf *util.Config) {
 	server := NewProxyServer(conf.KrakenApiKey, conf.KrakenPrivateKey)
-	server.DisableOtherRequests = conf.DisableOtherRequest
+	server.EnableOtherRequests = conf.EnableOtherRequest
 	fmt.Println(http.ListenAndServe(conf.Host+":"+conf.Port, server))
 }

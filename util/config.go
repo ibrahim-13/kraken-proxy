@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	KrakenApiKey        string
-	KrakenPrivateKey    string
-	Host                string
-	Port                string
-	DisableOtherRequest bool
+	KrakenApiKey       string
+	KrakenPrivateKey   string
+	Host               string
+	Port               string
+	EnableOtherRequest bool
 }
 
 var configData Config

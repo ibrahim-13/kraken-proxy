@@ -1,7 +1,5 @@
 package proxy
 
-// https://gist.github.com/yowu/f7dc34bd4736a65ff28d
-
 import (
 	"net/http"
 	"strings"
