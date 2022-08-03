@@ -58,3 +58,39 @@ PREFIX METHOD PATH OTHER_INFO...
 | `INVALID_HOST`     | Host does not match the Kraken API host     |
 | `INVALID_METHOD`   | Kraken request made without **POST** method |
 | `HTTP_REQUEST_ERR` | Error when making request                   |
+
+## HTTPS Server
+### Generate private key (.key)
+```sh
+# Key considerations for algorithm "RSA" ≥ 2048-bit
+openssl genrsa -out server.key 2048
+
+# Key considerations for algorithm "ECDSA" (X25519 || ≥ secp384r1)
+# https://safecurves.cr.yp.to/
+# List ECDSA the supported curves (openssl ecparam -list_curves)
+openssl ecparam -genkey -name secp384r1 -out server.key
+```
+### Generate public key (.crt)
+```sh
+openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+```
+
+### Generation of self-signed certificates with one command
+```sh
+# ECDSA recommendation key ≥ secp384r1
+# List ECDSA the supported curves (openssl ecparam -list_curves)
+openssl req -x509 -nodes -newkey ec:secp384r1 -keyout server.ecdsa.key -out server.ecdsa.crt -days 3650
+# openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name secp384r1) -keyout server.ecdsa.key -out server.ecdsa.crt -days 3650
+# -pkeyopt ec_paramgen_curve:… / ec:<(openssl ecparam -name …) / -newkey ec:…
+ln -sf server.ecdsa.key server.key
+ln -sf server.ecdsa.crt server.crt
+
+# RSA recommendation key ≥ 2048-bit
+openssl req -x509 -nodes -newkey rsa:2048 -keyout server.rsa.key -out server.rsa.crt -days 3650
+ln -sf server.rsa.key server.key
+ln -sf server.rsa.crt server.crt
+```
+
+## Resources
+  - Simple Golang HTTPS/TLS Examples: [denji/golang-tls](https://github.com/denji/golang-tls)
+  - A simple HTTP proxy by Golang: [yowu/f7dc34bd4736a65ff28d](https://gist.github.com/yowu/f7dc34bd4736a65ff28d)
