@@ -8,7 +8,8 @@ import (
 )
 
 func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if isKrakenRequest(w, r) {
+	result, err := isKrakenRequest(w, r)
+	if result {
 		logKrakenRequest(r)
 		r.ParseForm()
 		krakenRequest := getSignedRequest(r, p.KrakenApiKey, p.KrakenPrivateKey)
@@ -22,7 +23,7 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		copyHeader(w.Header(), response.Header)
 		w.WriteHeader(response.StatusCode)
 		io.Copy(w, response.Body)
-	} else if p.EnableOtherRequests {
+	} else if p.EnableOtherRequests && err == nil {
 		logOtherRequest(r)
 		client := &http.Client{}
 		delHopHeaders(r.Header)
