@@ -3,11 +3,13 @@ package main
 import (
 	"kraken-proxy/proxy"
 	"kraken-proxy/util"
-	"log"
 )
 
 func main() {
 	config := util.GetConfig()
-	log.Println("Starting server at " + config.Host + ":" + config.Port)
-	proxy.StartProxyServer(&config)
+	if config.EnableSsl {
+		proxy.StartProxyServerTLS(&config)
+	} else {
+		proxy.StartProxyServer(&config)
+	}
 }

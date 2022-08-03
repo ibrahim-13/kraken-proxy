@@ -22,3 +22,8 @@ go.work
 
 # Other files
 config.json
+
+# Certificates
+*.crt
+*.key
+*.pem

@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-// https://gist.github.com/yowu/f7dc34bd4736a65ff28d
-
 func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if isKrakenRequest(w, r) {
 		logKrakenRequest(r)
