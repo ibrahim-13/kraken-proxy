@@ -7,9 +7,5 @@ import (
 
 func main() {
 	config := util.GetConfig()
-	if config.EnableSsl {
-		proxy.StartProxyServerTLS(&config)
-	} else {
-		proxy.StartProxyServer(&config)
-	}
+	proxy.StartProxyServer(&config)
 }

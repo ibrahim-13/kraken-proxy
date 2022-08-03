@@ -11,9 +11,6 @@ type Config struct {
 	KrakenPrivateKey   string
 	Host               string
 	Port               string
-	ServerCertPath     string
-	ServerKeyPath      string
-	EnableSsl          bool
 	EnableOtherRequest bool
 }
 
