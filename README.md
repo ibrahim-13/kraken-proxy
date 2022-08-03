@@ -23,17 +23,25 @@ By default, this proxy only executes requests for Kraken Private APIs. This can 
     "KrakenPrivateKey": "",
     "Host": "",
     "Port": "",
-    "DisableOtherRequest": false
+    "ServerCertPath": "",
+    "ServerKeyPath": "",
+    "EnableSsl": false,
+    "EnableOtherRequest": false
 }
 ```
 
-| Field | Description |
-| --- | --- |
-| `KrakenApiKey` | API key for Kraken |
-| `KrakenPrivateKey` | Secret Key for Kraken |
-| `Host` | Host address for running the proxy server |
-| `Port` | Port for running the proxy server |
-| `DisableOtherRequest` | Block requests that are not made for Kraken |
+| Field                | Description                               |
+| -------------------- | ----------------------------------------- |
+| `KrakenApiKey`       | API key for Kraken                        |
+| `KrakenPrivateKey`   | Secret Key for Kraken                     |
+| `Host`               | Host address for running the proxy server |
+| `Port`               | Port for running the proxy server         |
+| `ServerCertPath`     | Certificate file location                 |
+| `ServerKeyPath`      | Private Key file location                 |
+| `EnableSsl`          | Run HTTPS proxy serve r                   |
+| `EnableOtherRequest` | Proxy for all destination addresses       |
+
+> When `EnableOtherRequest` is enabled, the proxy will execute all proxy request, but will only add authentication and authorization when the target host is Kraken.
 
 > Running the proxy without the configuration file, the application will panic and emit an example configuration file.
 
@@ -42,11 +50,11 @@ By default, this proxy only executes requests for Kraken Private APIs. This can 
 ```
 PREFIX METHOD PATH OTHER_INFO...
 ```
-| Prefix | Description |
-| --- | --- |
-| `BLOCKED` | Request has been blocked |
-| `KRAKEN` | Kraken request |
-| `OTHER_REQUEST` | Request other then Kraken API |
-| `INVALID_HOST` | Host does not match the Kraken API host |
-| `INVALID_METHOD` | Kraken request made without **POST** method |
-| `HTTP_REQUEST_ERR` | Error when making request |
+| Prefix             | Description                                 |
+| ------------------ | ------------------------------------------- |
+| `BLOCKED`          | Request has been blocked                    |
+| `KRAKEN`           | Kraken request                              |
+| `OTHER_REQUEST`    | Request other then Kraken API               |
+| `INVALID_HOST`     | Host does not match the Kraken API host     |
+| `INVALID_METHOD`   | Kraken request made without **POST** method |
+| `HTTP_REQUEST_ERR` | Error when making request                   |
